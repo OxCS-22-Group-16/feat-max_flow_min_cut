@@ -163,12 +163,12 @@ end
 instance [number_field K] : fintype (torsion K) :=
 @fintype.of_finite (torsion K) (torsion_finite K)
 
-instance torsion_cyclic [number_field K] : is_cyclic (torsion K) :=
-subgroup_units_cyclic _
+instance [number_field K] : is_cyclic (torsion K) :=
+subgroup_units_cyclic (torsion K)
 
+/-- The order of the torsion subgroup of `𝓤 K`. -/
 def torsion_order [number_field K] : ℕ+ :=
 begin
-  haveI : fintype (torsion K) := fintype.of_finite (torsion K),
   refine ⟨fintype.card (torsion K), _⟩,
   exact fintype.card_pos,
 end
