@@ -163,8 +163,7 @@ end
 instance [number_field K] : fintype (torsion K) :=
 @fintype.of_finite (torsion K) (torsion_finite K)
 
-instance [number_field K] : is_cyclic (torsion K) :=
-subgroup_units_cyclic (torsion K)
+lemma torsion_is_cyclic [number_field K] : is_cyclic (torsion K) := subgroup_units_cyclic _
 
 /-- The order of the torsion subgroup of `𝓤 K`. -/
 def torsion_order [number_field K] : ℕ+ :=
