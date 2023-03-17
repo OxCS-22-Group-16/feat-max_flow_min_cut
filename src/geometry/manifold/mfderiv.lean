@@ -5,6 +5,7 @@ Authors: Sébastien Gouëzel
 -/
 import geometry.manifold.local_invariant_properties
 import geometry.manifold.tangent_bundle
+import geometry.manifold.vector_bundle.basic
 
 /-!
 # The derivative of functions between smooth manifolds
@@ -1499,6 +1500,7 @@ begin
   simp only [continuous_linear_map.coe_coe, basic_smooth_vector_bundle_core.chart, h,
     tangent_bundle_core, basic_smooth_vector_bundle_core.to_vector_bundle_core,
     chart_at, sigma.mk.inj_iff] with mfld_simps,
+  sorry
 end
 
 end charts
@@ -1761,45 +1763,58 @@ begin
   exact this.unique_diff_on_target_inter _
 end
 
+open bundle
+open_locale manifold bundle
 variables {F : Type*} [normed_add_comm_group F] [normed_space 𝕜 F]
-(Z : basic_smooth_vector_bundle_core I M F)
+  (Z : M → Type*) [topological_space (total_space Z)] [∀ b, topological_space (Z b)]
+  [∀ b, add_comm_monoid (Z b)] [∀ b, module 𝕜 (Z b)]
+  [fiber_bundle F Z] [vector_bundle 𝕜 F Z] [smooth_vector_bundle F Z I]
 
 /-- In a smooth fiber bundle constructed from core, the preimage under the projection of a set with
 unique differential in the basis also has unique differential. -/
 lemma unique_mdiff_on.smooth_bundle_preimage (hs : unique_mdiff_on I s) :
-  unique_mdiff_on (I.prod (𝓘(𝕜, F))) (Z.to_vector_bundle_core.proj ⁻¹' s) :=
+  unique_mdiff_on (I.prod (𝓘(𝕜, F))) (π Z ⁻¹' s) :=
 begin
   /- Using a chart (and the fact that unique differentiability is invariant under charts), we
   reduce the situation to the model space, where we can use the fact that products respect
   unique differentiability. -/
   assume p hp,
   replace hp : p.fst ∈ s, by simpa only with mfld_simps using hp,
-  let e₀ := chart_at H p.1,
-  let e := chart_at (model_prod H F) p,
+  letI A : charted_space (model_prod H F) (total_space Z) := fiber_bundle.charted_space',
+  -- let e₀ := chart_at H p.1,
+  set e := chart_at (model_prod H F) p with he,
   -- It suffices to prove unique differentiability in a chart
   suffices h : unique_mdiff_on (I.prod (𝓘(𝕜, F)))
-    (e.target ∩ e.symm⁻¹' (Z.to_vector_bundle_core.proj ⁻¹' s)),
-  { have A : unique_mdiff_on (I.prod (𝓘(𝕜, F))) (e.symm.target ∩
-      e.symm.symm ⁻¹' (e.target ∩ e.symm⁻¹' (Z.to_vector_bundle_core.proj ⁻¹' s))),
+    (e.target ∩ e.symm⁻¹' (π Z ⁻¹' s)),
+  sorry { have A : unique_mdiff_on (I.prod (𝓘(𝕜, F))) (e.symm.target ∩
+      e.symm.symm ⁻¹' (e.target ∩ e.symm⁻¹' (π Z ⁻¹' s))),
     { apply h.unique_mdiff_on_preimage,
       exact (mdifferentiable_of_mem_atlas _ (chart_mem_atlas _ _)).symm,
       apply_instance },
     have : p ∈ e.symm.target ∩
-      e.symm.symm ⁻¹' (e.target ∩ e.symm⁻¹' (Z.to_vector_bundle_core.proj ⁻¹' s)),
+      e.symm.symm ⁻¹' (e.target ∩ e.symm⁻¹' (π Z ⁻¹' s)),
         by simp only [e, hp] with mfld_simps,
     apply (A _ this).mono,
     assume q hq,
     simp only [e, local_homeomorph.left_inv _ hq.1] with mfld_simps at hq,
     simp only [hq] with mfld_simps },
+  simp only [he, fiber_bundle.charted_space_chart_at p] with mfld_simps,
+  dsimp,
+  have C : (⇑((trivialization_at F Z p.fst).to_local_homeomorph.symm)
+    ∘ λ (p_1 : H × F), (((chart_at H p.fst).symm) p_1.fst, p_1.snd)) ⁻¹' (sigma.fst ⁻¹' s)
+    = univ,
+  {
+
+  },
   -- rewrite the relevant set in the chart as a direct product
   have : (λ (p : E × F), (I.symm p.1, p.snd)) ⁻¹' e.target ∩
          (λ (p : E × F), (I.symm p.1, p.snd)) ⁻¹' (e.symm ⁻¹' (sigma.fst ⁻¹' s)) ∩
          (range I ×ˢ univ)
         = (I.symm ⁻¹' (e₀.target ∩ e₀.symm⁻¹' s) ∩ range I) ×ˢ univ,
-    by mfld_set_tac,
+    sorry, --by mfld_set_tac,
   assume q hq,
   replace hq : q.1 ∈ (chart_at H p.1).target ∧ ((chart_at H p.1).symm : H → M) q.1 ∈ s,
-    by simpa only with mfld_simps using hq,
+    sorry, --by simpa only with mfld_simps using hq,
   simp only [unique_mdiff_within_at, model_with_corners.prod, preimage_inter, this] with mfld_simps,
   -- apply unique differentiability of products to conclude
   apply unique_diff_on.prod _ unique_diff_on_univ,
@@ -1815,7 +1830,7 @@ begin
 end
 
 lemma unique_mdiff_on.tangent_bundle_proj_preimage (hs : unique_mdiff_on I s):
-  unique_mdiff_on I.tangent ((tangent_bundle.proj I M) ⁻¹' s) :=
+  unique_mdiff_on I.tangent (π (tangent_space I) ⁻¹' s) :=
 hs.smooth_bundle_preimage _
 
 end unique_mdiff
